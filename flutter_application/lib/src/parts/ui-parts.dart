@@ -5,36 +5,41 @@ import 'package:flutter_application/src/ai.dart';
 import 'package:flutter_application/src/profile.dart';
 import 'package:flutter_application/src/parts/top_bar.dart';
 import 'package:flutter_application/src/parts/bottom_bar.dart';
+import 'package:flutter_application/src/quiz-list.dart';
 
-class MyButtomNavBar extends StatefulWidget {
-  const MyButtomNavBar({super.key});
+class MyBottomNavBar extends StatefulWidget {
+  const MyBottomNavBar({super.key});
 
   @override
-  State<MyButtomNavBar> createState() => _MyButtomNavBarState();
+  State<MyBottomNavBar> createState() => _MyBottomNavBarState();
 }
 
-class _MyButtomNavBarState extends State<MyButtomNavBar> {
+class _MyBottomNavBarState extends State<MyBottomNavBar> {
   int myCurrentIndex = 0;
-  List pages = const [
+
+  final List<Widget> pages = [
     QuizPage(),
     AddPage(),
     AIPage(),
     ProfilePage(),
   ];
 
+  void _navigateToPage(int index) {
+    setState(() {
+      myCurrentIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(),
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: myCurrentIndex,
-        onTap: (index) {
-          setState(() {
-            myCurrentIndex = index;
-          });
-        },
+        onTap: _navigateToPage,
       ),
-      body: pages[myCurrentIndex],
+      body: pages[myCurrentIndex], // 表示するページのウィジェット
     );
   }
 }
