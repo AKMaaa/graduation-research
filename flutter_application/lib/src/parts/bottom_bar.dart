@@ -52,9 +52,9 @@ class CustomBottomNavBar extends StatelessWidget {
                 label: '',
               ),
               NavigationDestination(
-                icon: Icon(Icons.add_circle, size: 30),
+                icon: Icon(Icons.calendar_today, size: 30),
                 selectedIcon:
-                    Icon(Icons.add_circle, color: Color(0xFF7A8EF8), size: 30),
+                    Icon(Icons.calendar_today, color: Color(0xFF7A8EF8), size: 30),
                 label: '',
               ),
               NavigationDestination(

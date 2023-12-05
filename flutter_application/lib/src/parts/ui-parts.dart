@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/src/quiz.dart';
-import 'package:flutter_application/src/add.dart';
+import 'package:flutter_application/src/calendar.dart';
 import 'package:flutter_application/src/ai.dart';
 import 'package:flutter_application/src/profile.dart';
 import 'package:flutter_application/src/parts/top_bar.dart';
 import 'package:flutter_application/src/parts/bottom_bar.dart';
-import 'package:flutter_application/src/quiz-list.dart';
+// import 'package:flutter_application/src/quiz-list.dart';
 
 class MyBottomNavBar extends StatefulWidget {
   const MyBottomNavBar({super.key});
@@ -19,7 +19,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
 
   final List<Widget> pages = [
     QuizPage(),
-    AddPage(),
+    CalendarPage(),
     AIPage(),
     ProfilePage(),
   ];

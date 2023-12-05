@@ -9,7 +9,7 @@ class QuizPage extends StatelessWidget {
     final Map<String, Widget Function(BuildContext)> subjectPages = {
       '国語': (context) => LanguagePage(),
       '数学': (context) => MathPage(),
-      '理科': (context) => SciencePage(),
+      '科学': (context) => SciencePage(),
       '社会': (context) => SocietyPage(),
     };
     // 科目名に基づいてページにナビゲートするメソッド
@@ -103,7 +103,7 @@ class QuizPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: SubjectCard(
-                      title: "理科",
+                      title: "科学",
                       imgPath: "lib/src/assets/img/science.png",
                       progress: 5,
                       total: 45,
