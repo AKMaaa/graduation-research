@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application/src/parts/ui-parts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:math';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -13,6 +16,40 @@ class _LoginPageState extends State<LoginPage> {
   // 入力したメールアドレス・パスワード
   String _email = '';
   String _password = '';
+
+  // ユーザー登録ボタンのonPressedメソッド
+  Future<void> _registerUser() async {
+    try {
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: _email, password: _password);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+
+                // Firebase StorageからダウンロードURLを取得
+        String imageName = 'profileImg${Random().nextInt(28) + 1}.png';
+        String imageUrl = await FirebaseStorage.instance
+            .ref('profile/$imageName')
+            .getDownloadURL();
+
+
+        // Firestoreにユーザー情報を保存
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'created_at': FieldValue.serverTimestamp(),
+          'email': user.email,
+          'name': 'your name',
+          'profileImageURL': imageUrl,
+          'uid': user.uid,
+        });
+
+        print("ユーザ登録しました ${user.email}, ${user.uid}");
+        // 登録成功後の処理（例：ログイン画面に戻る）
+      }
+    } catch (e) {
+      print(e);
+      // エラー処理
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,18 +82,7 @@ class _LoginPageState extends State<LoginPage> {
               // 3行目 ユーザ登録ボタン
               ElevatedButton(
                 child: const Text('ユーザ登録'),
-                onPressed: () async {
-                  try {
-                    final User? user = (await FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                                email: _email, password: _password))
-                        .user;
-                    if (user != null)
-                      print("ユーザ登録しました ${user.email} , ${user.uid}");
-                  } catch (e) {
-                    print(e);
-                  }
-                },
+                onPressed: _registerUser,
               ),
               // 4行目 ログインボタン
               ElevatedButton(

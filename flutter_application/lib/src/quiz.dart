@@ -107,7 +107,7 @@ class QuizPage extends StatelessWidget {
                       imgPath: "lib/src/assets/img/science.png",
                       progress: 5,
                       total: 45,
-                      onTap: () => navigateToSubject('理科'),
+                      onTap: () => navigateToSubject('科学'),
                     ),
                   ),
                   Expanded(
