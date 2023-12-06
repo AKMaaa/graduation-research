@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_application/src/quiz-list.dart';
 
 class QuizPage extends StatelessWidget {
-  const QuizPage({super.key});
+  const QuizPage({Key? key}) : super(key: key);
+
+  
   @override
   Widget build(BuildContext context) {
     // 科目名とページをマッピングする辞書
@@ -69,6 +72,34 @@ class QuizPage extends StatelessWidget {
                 ),
                 onSubmitted: (String value) {
                   // Search Processing
+                },
+              ),
+              SizedBox(height: 40.0),
+              Text(
+                "今日の1問",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              // Firestoreからクイズデータを取得するFutureBuilderを追加
+              FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance.collection('quiz').get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text("エラーが発生しました"));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(child: Text("クイズがありません"));
+                  }
+
+                  // Firestoreのクイズデータを取得
+                  var quizData = snapshot.data!.docs.first;
+                  return QuizCard(
+                    title: quizData['title'],
+                    imgPath: quizData['imageURL'],
+                    // データに応じて他のプロパティも設定
+                  );
                 },
               ),
               SizedBox(height: 40.0),
@@ -201,6 +232,86 @@ class SubjectCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class QuizCard extends StatelessWidget {
+  final String title;
+  final String imgPath;
+  // final int progress; // progressとtotalの値はFirestoreのデータ構造に依存します
+  // final int total;   // もしFirestoreにこれらのフィールドがあれば、引数に追加してください
+
+  const QuizCard({
+    required this.title,
+    required this.imgPath,
+    // required this.progress,
+    // required this.total,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Firestoreのデータに基づいてカードUIを構築
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      color: Color(0xffffffff),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xffffffff),
+          border: Border.all(
+            color: Color(0xffEDEDED),
+            width: 1.0,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 12.0),
+              Image.network(
+                imgPath,
+                width: 50,
+                height: 50,
+              ),
+              // LinearProgressIndicatorと終了テキストはコメントアウトされています
+              // Firestoreにこれらのデータがあれば、適宜コメントを外してください
+              /*
+              SizedBox(height: 8.0),
+              LinearProgressIndicator(
+                value: progress / total,
+                backgroundColor: Color(0xff6D7278),
+                color: Color(0xff9AE600),
+                minHeight: 5,
+                borderRadius: BorderRadius.circular(100.0),
+              ),
+              SizedBox(height: 8.0),
+              Text(
+                '$progress / $total 終了',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xff6D7278),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              */
+            ],
           ),
         ),
       ),
