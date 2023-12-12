@@ -275,7 +275,7 @@ class QuizCard extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 2.0),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(5.0),
+              borderRadius: BorderRadius.circular(100.0),
             ),
             child: Text('$tag'),
           ),
@@ -284,9 +284,22 @@ class QuizCard extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon), // アイコン表示
+          Icon(icon, size: 15.0), // アイコン表示
+          SizedBox(width: 2.0),
           ...tagWidgets, // 展開されたタグのウィジェットリスト
         ],
+      );
+    }
+
+    Widget buildImage(String imagePath) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10.0), // 角を丸める
+        child: Image.network(
+          imagePath,
+          width: 100, // 画像の幅
+          height: 100, // 画像の高さ
+          fit: BoxFit.cover, // 画像をクロップして拡大表示
+        ),
       );
     }
 
@@ -311,11 +324,11 @@ class QuizCard extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start, // 左寄せにする
             children: [
               Text(
                 "No.$quiz_number $title",
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.left, // テキストも左寄せにする
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -323,23 +336,23 @@ class QuizCard extends StatelessWidget {
               ),
               SizedBox(height: 12.0),
               Row(
+                mainAxisAlignment: MainAxisAlignment.start, // ここを変更して左寄せにする
+                crossAxisAlignment: CrossAxisAlignment.start, // 上揃えにする
                 children: [
-                  // 画像とタグの間にスペースを追加
-                  Column(
-                    children: [
-                      // elsitagの配列を表示
-                      buildTagRow(elsitags, Icons.push_pin), // 例えばピンアイコン
-                      SizedBox(height: 8.0),
-                      // techtagの配列を表示
-                      buildTagRow(techtags, Icons.settings), // 例えば設定アイコン
-                    ],
+                  Expanded(
+                    // Rowが画面幅いっぱいになるようにExpandedを使用
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // 左寄せにする
+                      children: [
+                        // elsitagの配列とアイコンを表示
+                        buildTagRow(elsitags, Icons.push_pin), // ピンアイコン
+                        SizedBox(height: 8.0),
+                        // techtagの配列とアイコンを表示
+                        buildTagRow(techtags, Icons.settings), // 設定アイコン
+                      ],
+                    ),
                   ),
-                  SizedBox(width: 8.0),
-                  Image.network(
-                    imgPath,
-                    width: 50,
-                    height: 50,
-                  ),
+                  buildImage(imgPath),
                 ],
               ),
               // LinearProgressIndicatorと終了テキストはコメントアウトされています
