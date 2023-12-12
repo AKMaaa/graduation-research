@@ -5,7 +5,6 @@ import 'package:flutter_application/src/quiz-list.dart';
 class QuizPage extends StatelessWidget {
   const QuizPage({Key? key}) : super(key: key);
 
-  
   @override
   Widget build(BuildContext context) {
     // 科目名とページをマッピングする辞書
@@ -97,7 +96,12 @@ class QuizPage extends StatelessWidget {
                   var quizData = snapshot.data!.docs.first;
                   return QuizCard(
                     title: quizData['title'],
+                    quiz_number: quizData['number'],
                     imgPath: quizData['imageURL'],
+                    elsitags: List<String>.from(
+                        quizData['elsiTag']), // Firestoreから配列を取得
+                    techtags: List<String>.from(
+                        quizData['techTag']), // Firestoreから配列を取得
                     // データに応じて他のプロパティも設定
                   );
                 },
@@ -241,12 +245,18 @@ class SubjectCard extends StatelessWidget {
 
 class QuizCard extends StatelessWidget {
   final String title;
+  final String quiz_number;
+  final List<dynamic> elsitags; // elsitagの配列
+  final List<dynamic> techtags; // techtagの配列
   final String imgPath;
   // final int progress; // progressとtotalの値はFirestoreのデータ構造に依存します
   // final int total;   // もしFirestoreにこれらのフィールドがあれば、引数に追加してください
 
   const QuizCard({
     required this.title,
+    required this.quiz_number,
+    required this.elsitags, // elsitagの配列を受け取る
+    required this.techtags, // techtagの配列を受け取る
     required this.imgPath,
     // required this.progress,
     // required this.total,
@@ -255,6 +265,32 @@ class QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1つのアイコンとそれに続くタグのリストを生成する関数
+    Widget buildTagRow(List<dynamic> tags, IconData icon) {
+      List<Widget> tagWidgets = [];
+      for (var tag in tags) {
+        tagWidgets.add(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            margin: EdgeInsets.symmetric(horizontal: 2.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            child: Text('$tag'),
+          ),
+        );
+      }
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon), // アイコン表示
+          ...tagWidgets, // 展開されたタグのウィジェットリスト
+        ],
+      );
+    }
+
+    double screenWidth = MediaQuery.of(context).size.width;
     // Firestoreのデータに基づいてカードUIを構築
     return Card(
       elevation: 0,
@@ -263,6 +299,7 @@ class QuizCard extends StatelessWidget {
       ),
       color: Color(0xffffffff),
       child: Container(
+        width: screenWidth,
         decoration: BoxDecoration(
           color: Color(0xffffffff),
           border: Border.all(
@@ -277,7 +314,7 @@ class QuizCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                title,
+                "No.$quiz_number $title",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
@@ -285,32 +322,28 @@ class QuizCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 12.0),
-              Image.network(
-                imgPath,
-                width: 50,
-                height: 50,
+              Row(
+                children: [
+                  // 画像とタグの間にスペースを追加
+                  Column(
+                    children: [
+                      // elsitagの配列を表示
+                      buildTagRow(elsitags, Icons.push_pin), // 例えばピンアイコン
+                      SizedBox(height: 8.0),
+                      // techtagの配列を表示
+                      buildTagRow(techtags, Icons.settings), // 例えば設定アイコン
+                    ],
+                  ),
+                  SizedBox(width: 8.0),
+                  Image.network(
+                    imgPath,
+                    width: 50,
+                    height: 50,
+                  ),
+                ],
               ),
               // LinearProgressIndicatorと終了テキストはコメントアウトされています
               // Firestoreにこれらのデータがあれば、適宜コメントを外してください
-              /*
-              SizedBox(height: 8.0),
-              LinearProgressIndicator(
-                value: progress / total,
-                backgroundColor: Color(0xff6D7278),
-                color: Color(0xff9AE600),
-                minHeight: 5,
-                borderRadius: BorderRadius.circular(100.0),
-              ),
-              SizedBox(height: 8.0),
-              Text(
-                '$progress / $total 終了',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xff6D7278),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              */
             ],
           ),
         ),
