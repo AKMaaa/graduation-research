@@ -265,101 +265,146 @@ class QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1つのアイコンとそれに続くタグのリストを生成する関数
+    // タグ行を構築する関数
     Widget buildTagRow(List<dynamic> tags, IconData icon) {
-      List<Widget> tagWidgets = [];
-      for (var tag in tags) {
-        tagWidgets.add(
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            margin: EdgeInsets.symmetric(horizontal: 2.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(100.0),
-            ),
-            child: Text('$tag'),
-          ),
-        );
-      }
-      return Row(
-        mainAxisSize: MainAxisSize.min,
+      // タグリストからウィジェットリストを構築
+      List<Widget> tagWidgets = tags
+          .map((tag) => Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                margin: EdgeInsets.only(right: 0.0),
+                decoration: BoxDecoration(
+                  color: Colors.white, // タグの背景色
+                  borderRadius: BorderRadius.circular(20.0), // タグのボーダーの丸み
+                  border: Border.all(
+                    color: Color(0xffFDC08E),
+                    width: 2.0,
+                  ),
+                ),
+                child: Text(
+                  tag,
+                  style: TextStyle(
+                    fontSize: 12.0, // タグのフォントサイズ
+                    color: Color(0xffFDC08E),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ))
+          .toList();
+
+      // タグとアイコンをWrapで横並びに表示
+      return Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 5.0, // 横のスペース
         children: [
-          Icon(icon, size: 15.0), // アイコン表示
-          SizedBox(width: 2.0),
-          ...tagWidgets, // 展開されたタグのウィジェットリスト
+          Icon(icon, size: 16.0), // アイコンサイズ
+          ...tagWidgets, // 展開されたタグリスト
         ],
       );
     }
 
     Widget buildImage(String imagePath) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(10.0), // 角を丸める
+        borderRadius: BorderRadius.circular(20.0), // 画像の角の丸み
         child: Image.network(
           imagePath,
-          width: 100, // 画像の幅
-          height: 100, // 画像の高さ
+          width: 90.0, // 画像の幅を調整
+          height: 90.0, // 画像の高さを調整
           fit: BoxFit.cover, // 画像をクロップして拡大表示
         ),
       );
     }
 
-    double screenWidth = MediaQuery.of(context).size.width;
+    Widget buildTitleBar(String quizNumber, String title) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.orange[300], // タイトルバーの背景色
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10.0),
+            topRight: Radius.circular(10.0),
+          ),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // エレメントを左右に分ける
+          children: [
+            // クイズ番号とタイトルを含む左側のコンテナ
+            Padding(
+              padding: EdgeInsets.only(left: 16.0),
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "No.$quizNumber",
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    TextSpan(text: " "), // スペースを追加
+                    TextSpan(
+                      text: title,
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // 編集アイコンを含む右側のコンテナ
+            Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: Icon(
+                Icons.favorite,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // double screenWidth = MediaQuery.of(context).size.width;
     // Firestoreのデータに基づいてカードUIを構築
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: Color(0xffEDEDED), width: 1), // ボーダーを追加
+        borderRadius: BorderRadius.circular(10.0),
       ),
       color: Color(0xffffffff),
-      child: Container(
-        width: screenWidth,
-        decoration: BoxDecoration(
-          color: Color(0xffffffff),
-          border: Border.all(
-            color: Color(0xffEDEDED),
-            width: 1.0,
-          ),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // 左寄せにする
-            children: [
-              Text(
-                "No.$quiz_number $title",
-                textAlign: TextAlign.left, // テキストも左寄せにする
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 12.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start, // ここを変更して左寄せにする
-                crossAxisAlignment: CrossAxisAlignment.start, // 上揃えにする
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildTitleBar(quiz_number, title), // タイトルバーを追加
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: IntrinsicHeight(
+              // 子ウィジェットの高さを合わせる
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    // Rowが画面幅いっぱいになるようにExpandedを使用
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start, // 左寄せにする
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // elsitagの配列とアイコンを表示
-                        buildTagRow(elsitags, Icons.push_pin), // ピンアイコン
+                        SizedBox(height: 18),
+                        buildTagRow(
+                            elsitags, Icons.lightbulb_outline), // elsitagを表示
                         SizedBox(height: 8.0),
-                        // techtagの配列とアイコンを表示
-                        buildTagRow(techtags, Icons.settings), // 設定アイコン
+                        buildTagRow(techtags, Icons.computer), // techtagを表示
                       ],
                     ),
                   ),
-                  buildImage(imgPath),
+                  buildImage(imgPath), // 画像を表示
                 ],
               ),
-              // LinearProgressIndicatorと終了テキストはコメントアウトされています
-              // Firestoreにこれらのデータがあれば、適宜コメントを外してください
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
