@@ -9,12 +9,13 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
   }) : super(key: key);
+  
 
   @override
   Widget build(BuildContext context) {
     const double radiusValue = 50;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radiusValue),
         boxShadow: [

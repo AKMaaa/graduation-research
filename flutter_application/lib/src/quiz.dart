@@ -14,6 +14,7 @@ class QuizPage extends StatelessWidget {
       '科学': (context) => SciencePage(),
       '社会': (context) => SocietyPage(),
     };
+
     // 科目名に基づいてページにナビゲートするメソッド
     void navigateToSubject(String subject) {
       final pageBuilder = subjectPages[subject];
@@ -102,6 +103,8 @@ class QuizPage extends StatelessWidget {
                         quizData['elsiTag']), // Firestoreから配列を取得
                     techtags: List<String>.from(
                         quizData['techTag']), // Firestoreから配列を取得
+                    text: quizData['text'],
+                    question: quizData['question'],
                     // データに応じて他のプロパティも設定
                   );
                 },
@@ -249,6 +252,8 @@ class QuizCard extends StatelessWidget {
   final List<dynamic> elsitags; // elsitagの配列
   final List<dynamic> techtags; // techtagの配列
   final String imgPath;
+  final String text;
+  final String question;
   // final int progress; // progressとtotalの値はFirestoreのデータ構造に依存します
   // final int total;   // もしFirestoreにこれらのフィールドがあれば、引数に追加してください
 
@@ -257,11 +262,100 @@ class QuizCard extends StatelessWidget {
     required this.quiz_number,
     required this.elsitags, // elsitagの配列を受け取る
     required this.techtags, // techtagの配列を受け取る
-    required this.imgPath,
+    required this.imgPath, // imageのpath
+    required this.text, // 社会事例のtext
+    required this.question,
+
     // required this.progress,
     // required this.total,
     Key? key,
   }) : super(key: key);
+
+  Widget buildImage(String imagePath) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20.0), // 画像の角の丸み
+      child: Image.network(
+        imagePath,
+        width: 90.0, // 画像の幅を調整
+        height: 90.0, // 画像の高さを調整
+        fit: BoxFit.cover, // 画像をクロップして拡大表示
+      ),
+    );
+  }
+
+  void showQuizDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          elevation: 0.0,
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          actions: <Widget>[
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+            ),
+          ],
+          title: Text(
+            'No.$quiz_number $title',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                SizedBox(height: 10),
+                buildImage(imgPath),
+                SizedBox(height: 25),
+                Text('$text',
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff404040),
+                    )),
+                SizedBox(height: 10),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Color(0xffE8E8E8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.quiz), // Replace with your quiz icon
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '$question',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff161616),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // ... add more widgets if needed
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -299,18 +393,6 @@ class QuizCard extends StatelessWidget {
           Icon(icon, size: 16.0), // アイコンサイズ
           ...tagWidgets, // 展開されたタグリスト
         ],
-      );
-    }
-
-    Widget buildImage(String imagePath) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(20.0), // 画像の角の丸み
-        child: Image.network(
-          imagePath,
-          width: 90.0, // 画像の幅を調整
-          height: 90.0, // 画像の高さを調整
-          fit: BoxFit.cover, // 画像をクロップして拡大表示
-        ),
       );
     }
 
@@ -369,42 +451,45 @@ class QuizCard extends StatelessWidget {
 
     // double screenWidth = MediaQuery.of(context).size.width;
     // Firestoreのデータに基づいてカードUIを構築
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Color(0xffEDEDED), width: 1), // ボーダーを追加
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      color: Color(0xffffffff),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildTitleBar(quiz_number, title), // タイトルバーを追加
-          Padding(
-            padding: EdgeInsets.all(16.0),
-            child: IntrinsicHeight(
-              // 子ウィジェットの高さを合わせる
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 18),
-                        buildTagRow(
-                            elsitags, Icons.lightbulb_outline), // elsitagを表示
-                        SizedBox(height: 8.0),
-                        buildTagRow(techtags, Icons.computer), // techtagを表示
-                      ],
+    return InkWell(
+      onTap: () => showQuizDialog(context),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Color(0xffEDEDED), width: 1), // ボーダーを追加
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        color: Color(0xffffffff),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildTitleBar(quiz_number, title), // タイトルバーを追加
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: IntrinsicHeight(
+                // 子ウィジェットの高さを合わせる
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 18),
+                          buildTagRow(
+                              elsitags, Icons.lightbulb_outline), // elsitagを表示
+                          SizedBox(height: 8.0),
+                          buildTagRow(techtags, Icons.computer), // techtagを表示
+                        ],
+                      ),
                     ),
-                  ),
-                  buildImage(imgPath), // 画像を表示
-                ],
+                    buildImage(imgPath), // 画像を表示
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -35,8 +35,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: myCurrentIndex,
+      bottomNavigationBar: CustomBottomNavBar(        currentIndex: myCurrentIndex,
         onTap: _navigateToPage,
       ),
       body: pages[myCurrentIndex], // 表示するページのウィジェット
