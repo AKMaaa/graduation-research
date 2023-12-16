@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_application/src/quiz-list.dart';
+import 'package:flutter_application/src/answer.dart';
 
 class QuizPage extends StatelessWidget {
   const QuizPage({Key? key}) : super(key: key);
@@ -94,7 +95,7 @@ class QuizPage extends StatelessWidget {
                   }
 
                   // Firestoreのクイズデータを取得
-                  var quizData = snapshot.data!.docs.first;
+                  var quizData = snapshot.data!.docs[1];
                   return QuizCard(
                     title: quizData['title'],
                     quiz_number: quizData['number'],
@@ -283,6 +284,23 @@ class QuizCard extends StatelessWidget {
     );
   }
 
+  void navigateToAnswerPage(BuildContext context) {
+    // `AnswerPage` is a placeholder for your actual question details page.
+    // Replace with the actual page class and pass the necessary arguments.
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnswerPage(
+          quizNumber: quiz_number,
+          title: title,
+          imgPath: imgPath,
+          text: text,
+          question: question,
+        ),
+      ),
+    );
+  }
+
   void showQuizDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -296,11 +314,18 @@ class QuizCard extends StatelessWidget {
           actions: <Widget>[
             Align(
               alignment: Alignment.topRight,
-              child: IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
+              child: Container(
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                decoration: BoxDecoration(
+                  color: Colors.orange[300], // 戻るボタンの背景色
+                  borderRadius: BorderRadius.circular(100), // 角の丸み
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white), // アイコンを白色に設定
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                ),
               ),
             ),
           ],
@@ -308,16 +333,18 @@ class QuizCard extends StatelessWidget {
             'No.$quiz_number $title',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
+          contentPadding:
+              EdgeInsets.only(left: 24, right: 24, top: 10, bottom: 0),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 SizedBox(height: 10),
                 buildImage(imgPath),
-                SizedBox(height: 25),
+                SizedBox(height: 10),
                 Text('$text',
                     style: TextStyle(
                       fontSize: 16.0,
@@ -329,7 +356,7 @@ class QuizCard extends StatelessWidget {
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Color(0xffE8E8E8),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Row(
                     children: <Widget>[
@@ -346,6 +373,30 @@ class QuizCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: ElevatedButton(
+                    child: Text(
+                      'この問題に挑戦する',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.fromLTRB(0, 12, 0, 15),
+                      backgroundColor: Colors.orange[300],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      elevation: 1.0, // 影の大きさ
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog first
+                      navigateToAnswerPage(context);
+                    },
                   ),
                 ),
                 // ... add more widgets if needed
@@ -418,7 +469,7 @@ class QuizCard extends StatelessWidget {
                     TextSpan(
                       text: "No.$quizNumber",
                       style: TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 12.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -427,7 +478,7 @@ class QuizCard extends StatelessWidget {
                     TextSpan(
                       text: title,
                       style: TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 12.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
