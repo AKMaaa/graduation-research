@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/src/parts/top_bar.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
 
 // Add this import statement at the top of the file to resolve the error.
+
+// 送信されたアイテムを表すクラス
+enum MessageType { text, image, url }
+
+class Message {
+  MessageType type;
+  String content;
+
+  Message({required this.type, required this.content});
+}
 
 class AnswerPage extends StatefulWidget {
   final String quizNumber;
@@ -26,11 +39,8 @@ class AnswerPage extends StatefulWidget {
 
 class _AnswerPageState extends State<AnswerPage> {
   final TextEditingController _controller = TextEditingController();
-  List<String> _submittedTexts = [];
+  List<Message> _submittedTexts = [];
   double _minChildSize = 0.15;
-  String debug_text = "debug 1549";
-
-  // print("$debug_text $keyboardHeight $screenHeight $newMinChildSize");
 
   @override
   void initState() {
@@ -41,7 +51,7 @@ class _AnswerPageState extends State<AnswerPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-          double screenHeight = MediaQuery.of(context).size.height;
+          // double screenHeight = MediaQuery.of(context).size.height;
           double newMinChildSize;
 
           if (keyboardHeight > 0) {
@@ -51,7 +61,6 @@ class _AnswerPageState extends State<AnswerPage> {
             newMinChildSize = 0.28;
           }
 
-          print("$debug_text $keyboardHeight $screenHeight $newMinChildSize");
           setState(() {
             _minChildSize = newMinChildSize;
           });
@@ -62,11 +71,48 @@ class _AnswerPageState extends State<AnswerPage> {
 
   void _handleSubmit() {
     if (_controller.text.isNotEmpty) {
+      final text = _controller.text;
+      final type = _isURL(text) ? MessageType.url : MessageType.text;
+
+      print(
+          'Submitted text: $text, Detected as URL: ${_isURL(text)}'); // デバッグ用の出力
+
       setState(() {
-        _submittedTexts.add(_controller.text);
+        _submittedTexts.add(Message(type: type, content: text));
         _controller.clear();
       });
     }
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _submittedTexts
+            .add(Message(type: MessageType.image, content: image.path));
+      });
+    }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(Uri.encodeFull(urlString));
+    if (await canLaunchUrl(url)) {
+      try {
+        await launchUrl(url);
+      } catch (e) {
+        print('URL launch error: $e');
+      }
+    } else {
+      print('Could not launch $url');
+    }
+  }
+
+  bool _isURL(String text) {
+    final Uri? uri = Uri.tryParse(text);
+    if (uri == null) return false;
+    return uri.scheme == 'http' || uri.scheme == 'https';
   }
 
   @override
@@ -176,38 +222,118 @@ class _AnswerPageState extends State<AnswerPage> {
                         controller: scrollController,
                         itemCount: _submittedTexts.length,
                         itemBuilder: (context, index) {
-                          return Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(10.0),
-                                  bottomRight: Radius.circular(10.0),
-                                  bottomLeft: Radius.circular(10.0),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 2,
-                                    offset: Offset(0, 2), // 影の位置を変更
+                          final message = _submittedTexts[index];
+                          switch (message.type) {
+                            case MessageType.text:
+                              return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 5.0), // ここを調整
+                                  margin: EdgeInsets.only(
+                                      top: 5.0,
+                                      left: 10.0,
+                                      right: 10.0,
+                                      bottom: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // 背景色
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(10.0),
+                                      bottomRight: Radius.circular(10.0),
+                                      bottomLeft: Radius.circular(10.0),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        spreadRadius: 1,
+                                        blurRadius: 2,
+                                        offset: Offset(0, 2), // 影の位置を変更
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 15.0, vertical: 7.0),
-                              margin: EdgeInsets.only(top: 15.0),
-                              child: Text(
-                                _submittedTexts[index],
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w800,
+                                  child: Text(
+                                    message.content,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
+                              );
+                            case MessageType.image:
+                              return Container(
+                                height: 300.0,
+                                margin: EdgeInsets.only(
+                                    top: 10.0,
+                                    left: 10.0,
+                                    right: 10.0,
+                                    bottom: 10.0),
+                                child: ClipRRect(
+                                  borderRadius:
+                                      BorderRadius.circular(15.0), // 画像の角を丸める
+                                  child: Image.file(
+                                    File(message.content),
+                                    fit: BoxFit.cover, // ここを変更
+                                  ),
+                                ),
+                              );
+                            case MessageType.url:
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0), // 余白を追加
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // 背景色を白に設定
+                                    borderRadius:
+                                        BorderRadius.circular(10.0), // 角を丸める
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        spreadRadius: 1,
+                                        blurRadius: 2,
+                                        offset: Offset(0, 2), // 影の位置を変更
+                                      ),
+                                    ],
+                                  ),
+                                  child: InkWell(
+                                    onTap: () {
+                                      print(
+                                          'URL Tapped: ${message.content}'); // タップ時にコンソールに出力
+                                      _launchURL(message.content);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(
+                                          10.0), // 内側の余白を追加
+                                      child: Row(
+                                        mainAxisSize:
+                                            MainAxisSize.min, // 行のサイズを内容に合わせる
+                                        children: [
+                                          Icon(Icons.link,
+                                              color: Colors.blue), // リンクアイコン
+                                          SizedBox(width: 8.0), // アイコンとテキストの間隔
+                                          Expanded(
+                                            child: Text(
+                                              message.content,
+                                              style: TextStyle(
+                                                fontSize: 20.0, // フォントサイズを大きくする
+                                                color: Colors.blue,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                              overflow: TextOverflow
+                                                  .ellipsis, // 長いテキストを省略
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+
+                            default:
+                              return SizedBox.shrink();
+                          }
                         },
                       ),
                     ),
@@ -225,6 +351,10 @@ class _AnswerPageState extends State<AnswerPage> {
                               controller: _controller,
                               decoration: InputDecoration(
                                 hintText: "考えたことを入力する",
+                                prefixIcon: IconButton(
+                                  icon: Icon(Icons.photo_camera),
+                                  onPressed: _pickImage,
+                                ),
                                 hintStyle: TextStyle(
                                   color: Color(0xffFDC08E),
                                   fontSize: 16.0,
