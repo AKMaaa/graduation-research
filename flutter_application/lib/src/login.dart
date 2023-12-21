@@ -40,6 +40,7 @@ class _LoginPageState extends State<LoginPage> {
           'name': 'your name',
           'profileImageURL': imageUrl,
           'uid': user.uid,
+          'manager' : false,
         });
 
         print("ユーザ登録しました ${user.email}, ${user.uid}");

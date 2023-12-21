@@ -92,7 +92,7 @@ class _AnswerPageState extends State<AnswerPage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          insetPadding: EdgeInsets.all(0), // ダイアログの周りのパディングを削除
+          insetPadding: EdgeInsets.all(26), // ダイアログの周りのパディングを削除
           child: Container(
             margin: EdgeInsets.all(0), // コンテナのマージンを削除
             child: ClipRRect(
@@ -256,6 +256,7 @@ class _AnswerPageState extends State<AnswerPage> {
                       Container(
                         width: 100,
                         height: 5,
+                        margin: EdgeInsets.fromLTRB(0,0,0,0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
@@ -270,7 +271,7 @@ class _AnswerPageState extends State<AnswerPage> {
                             switch (message.type) {
                               case MessageType.text:
                                 return Align(
-                                  alignment: Alignment.centerLeft,
+                                  alignment: Alignment.centerRight,
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                         horizontal: 10.0,
@@ -283,7 +284,7 @@ class _AnswerPageState extends State<AnswerPage> {
                                     decoration: BoxDecoration(
                                       color: Colors.white, // 背景色
                                       borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(10.0),
+                                        topLeft: Radius.circular(10.0),
                                         bottomRight: Radius.circular(10.0),
                                         bottomLeft: Radius.circular(10.0),
                                       ),
@@ -392,7 +393,7 @@ class _AnswerPageState extends State<AnswerPage> {
                         padding: EdgeInsets.only(
                           left: 0,
                           right: 0,
-                          // top: 0,
+                          // top: 10,
                           bottom: MediaQuery.of(context).viewInsets.bottom,
                         ),
                         child: Row(

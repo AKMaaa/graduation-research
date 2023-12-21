@@ -19,7 +19,7 @@ class _CalendarPageState extends State<CalendarPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(backgroundColor: Colors.white, title: Text('カレンダー 📅')),
       body: TableCalendar(
-        firstDay: DateTime.utc(1900, 1, 1),
+        firstDay: DateTime.utc(2023, 1, 1),
         lastDay: DateTime.utc(2100, 12, 31),
         focusedDay: _focusedDay,
         selectedDayPredicate: (day) => isSameDay(_selectedDay, day),

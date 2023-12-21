@@ -14,6 +14,8 @@ class AnswerListPage extends StatefulWidget {
 }
 
 class _AnswerListPageState extends State<AnswerListPage> {
+  bool _isPersonalSelected = true;
+
   // abs data
   List<Message> messages = [
     Message(type: MessageType.text, content: 'テキストメッセージ'),
@@ -49,6 +51,7 @@ class _AnswerListPageState extends State<AnswerListPage> {
         children: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 30.0),
+            margin: EdgeInsets.only(bottom: 10),
             color: Colors.grey[200],
             child: DropdownButton<MessageType>(
               hint: Text("絞り込み"),
@@ -137,6 +140,7 @@ class _AnswerListPageState extends State<AnswerListPage> {
           ),
         ],
       ),
+      bottomNavigationBar: _buildSwitchAndSaveButton(),
     );
   }
 
@@ -171,4 +175,52 @@ class _AnswerListPageState extends State<AnswerListPage> {
       throw 'Could not launch $urlString';
     }
   }
+
+  Widget _buildSwitchAndSaveButton() {
+    return BottomAppBar(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            GestureDetector(
+              onTap: () => setState(() => _isPersonalSelected = true),
+              child: _buildIconWithCircle(
+                icon: Icons.person,
+                isSelected: _isPersonalSelected,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => setState(() => _isPersonalSelected = false),
+              child: _buildIconWithCircle(
+                icon: Icons.public,
+                isSelected: !_isPersonalSelected,
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // 保存ボタンの処理
+              },
+              child: Text('保存'),
+            ),
+          ],
+        ),
+      ),
+      color: Colors.white,
+    );
+  }
+
+  Widget _buildIconWithCircle(
+      {required IconData icon, required bool isSelected}) {
+    return Container(
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.blue : Colors.transparent,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, color: isSelected ? Colors.white : Colors.black),
+    );
+  }
+
+
 }
