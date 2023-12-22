@@ -224,8 +224,9 @@ class _AnswerPageState extends State<AnswerPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                AnswerListPage(messages: _submittedTexts),
+                            builder: (context) => AnswerListPage(
+                                messages: _submittedTexts,
+                                quizId: widget.quizNumber),
                           ),
                         );
                       },
@@ -256,7 +257,7 @@ class _AnswerPageState extends State<AnswerPage> {
                       Container(
                         width: 100,
                         height: 5,
-                        margin: EdgeInsets.fromLTRB(0,0,0,0),
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),

@@ -3,23 +3,31 @@ import 'package:flutter_application/src/parts/top_bar.dart';
 import 'package:flutter_application/src/message_model.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AnswerListPage extends StatefulWidget {
   final List<Message> messages;
+  final String quizId;
 
-  AnswerListPage({Key? key, required this.messages}) : super(key: key);
+  AnswerListPage({Key? key, required this.messages, required this.quizId})
+      : super(key: key);
 
   @override
   _AnswerListPageState createState() => _AnswerListPageState();
 }
 
 class _AnswerListPageState extends State<AnswerListPage> {
-  bool _isPersonalSelected = true;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  bool _isPublicSelected = true;
 
   // abs data
   List<Message> messages = [
-    Message(type: MessageType.text, content: 'テキストメッセージ'),
-    Message(type: MessageType.image, content: '画像のパス'),
+    Message(type: MessageType.text, content: 'text'),
+    Message(type: MessageType.image, content: 'imagePath'),
     Message(type: MessageType.url, content: 'https://example.com'),
   ];
 
@@ -47,12 +55,13 @@ class _AnswerListPageState extends State<AnswerListPage> {
 
     return Scaffold(
       appBar: CustomAppBarBack(),
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 30.0),
-            margin: EdgeInsets.only(bottom: 10),
-            color: Colors.grey[200],
+            margin: EdgeInsets.only(bottom: 15),
+            color: Colors.white,
             child: DropdownButton<MessageType>(
               hint: Text("絞り込み"),
               value: selectedType,
@@ -140,7 +149,7 @@ class _AnswerListPageState extends State<AnswerListPage> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildSwitchAndSaveButton(),
+      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -176,51 +185,161 @@ class _AnswerListPageState extends State<AnswerListPage> {
     }
   }
 
-  Widget _buildSwitchAndSaveButton() {
+  Widget _buildBottomBar() {
     return BottomAppBar(
+      elevation: 0.0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            GestureDetector(
-              onTap: () => setState(() => _isPersonalSelected = true),
-              child: _buildIconWithCircle(
-                icon: Icons.person,
-                isSelected: _isPersonalSelected,
-              ),
+            // Toggle buttons
+            _buildToggleIcon(
+              icon: Icons.person,
+              text: "個人",
+              isSelected: !_isPublicSelected,
+              isLeft: true,
+              onTap: () => setState(() => _isPublicSelected = false),
             ),
-            GestureDetector(
-              onTap: () => setState(() => _isPersonalSelected = false),
-              child: _buildIconWithCircle(
-                icon: Icons.public,
-                isSelected: !_isPersonalSelected,
-              ),
+            _buildToggleIcon(
+              icon: Icons.public,
+              text: "全体",
+              isSelected: _isPublicSelected,
+              isLeft: false,
+              onTap: () => setState(() => _isPublicSelected = true),
             ),
-            ElevatedButton(
+            SizedBox(width: 10),
+            // Save button
+            ElevatedButton.icon(
+              icon: Icon(Icons.save, color: Color(0xffFDC08E)),
+              label: Text(
+                "保存",
+                style: TextStyle(color: Color(0xffFDC08E)),
+              ),
               onPressed: () {
-                // 保存ボタンの処理
+                if (_isPublicSelected) {
+                  // 全体に共有する場合の処理
+                } else {
+                  _saveToFirestore();
+                }
               },
-              child: Text('保存'),
-            ),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.white, // Button background color
+                onPrimary:
+                    Color(0xffFDC08E), // Ripple color (effect color on press)
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                  side: BorderSide(color: Color(0xffFDC08E)), // Border color
+                ),
+                elevation: 0, // Removes shadow
+              ),
+            )
           ],
         ),
       ),
-      color: Colors.white,
+      color: Color(0xffFFFFFF),
     );
   }
 
-  Widget _buildIconWithCircle(
-      {required IconData icon, required bool isSelected}) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.blue : Colors.transparent,
-        shape: BoxShape.circle,
+  Widget _buildToggleIcon({
+    required IconData icon,
+    required String text,
+    required bool isSelected,
+    required bool isLeft,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 250),
+          height: 40,
+          decoration: BoxDecoration(
+            color: isSelected ? Color(0xffFDC08E) : Colors.transparent,
+            borderRadius: isLeft
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    bottomLeft: Radius.circular(20),
+                  )
+                : BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+            border: Border.all(
+              color: Color(0xffFDC08E),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : Color(0xffFDC08E),
+              ),
+              SizedBox(width: 4),
+              Text(
+                text,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Color(0xffFDC08E),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Icon(icon, color: isSelected ? Colors.white : Colors.black),
     );
   }
 
+  Future<void> _saveToFirestore() async {
+    var user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
+    var quizId = widget.quizId;
+    var selectedMessages =
+        widget.messages.where((msg) => msg.isSelected).toList();
+
+    DocumentReference docRef;
+    String storagePath;
+
+    if (_isPublicSelected) {
+      // For public selection
+      docRef = _firestore.collection('quiz').doc(quizId);
+      storagePath = 'quiz/all/$quizId/';
+    } else {
+      // For individual selection
+      docRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('quiz')
+          .doc(quizId);
+      storagePath = 'quiz/personal/${user.email}/$quizId/';
+    }
+
+    var batch = _firestore.batch();
+
+    for (var message in selectedMessages) {
+      if (message.type == MessageType.image) {
+        // Upload image to Storage
+        var imagePath =
+            '$storagePath${DateTime.now().millisecondsSinceEpoch}.png';
+        var file = File(message.content);
+        var uploadTask = _storage.ref(imagePath).putFile(file);
+        var taskSnapshot = await uploadTask;
+        var downloadUrl = await taskSnapshot.ref.getDownloadURL();
+
+        // Save URL to Firestore
+        batch.update(docRef, {
+          "answers": FieldValue.arrayUnion([downloadUrl])
+        });
+      } else {
+        // Save text or URL to Firestore
+        batch.update(docRef, {
+          "answers": FieldValue.arrayUnion([message.content])
+        });
+      }
+    }
+
+    await batch.commit();
+  }
 }

@@ -95,7 +95,7 @@ class QuizPage extends StatelessWidget {
                   }
 
                   // Firestoreのクイズデータを取得
-                  var quizData = snapshot.data!.docs[0];
+                  var quizData = snapshot.data!.docs[1];
                   return QuizCard(
                     title: quizData['title'],
                     quiz_number: quizData['number'],
