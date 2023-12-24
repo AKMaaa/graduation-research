@@ -148,6 +148,21 @@ class _AnswerPageState extends State<AnswerPage> {
         false;
   }
 
+  void showFullImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Image.network(imageUrl, fit: BoxFit.contain),
+          contentPadding: EdgeInsets.all(0),
+          insetPadding: EdgeInsets.all(0),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -165,23 +180,30 @@ class _AnswerPageState extends State<AnswerPage> {
                 children: <Widget>[
                   Text(
                     "No.${widget.quizNumber} ${widget.title}",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 16),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0), // 画像の角を丸める
-                    child: Image.network(
-                      widget.imgPath,
-                      width: MediaQuery.of(context).size.width * 1, // 画像のサイズを調整
+                  GestureDetector(
+                    onTap: () {
+                      showFullImageDialog(context, widget.imgPath);
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.network(
+                        widget.imgPath,
+                        width: MediaQuery.of(context).size.width * 1,
+                        height: MediaQuery.of(context).size.width * 0.5,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
-                  Text(widget.text, style: TextStyle(fontSize: 14)),
+                  Text(widget.text, style: TextStyle(fontSize: 16)),
                   SizedBox(height: 16),
                   Container(
                     padding: EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Color(0xffE8E8E8), // チャットの部分の背景色
+                      color: Color(0xffE8E8E8),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Row(
@@ -192,7 +214,7 @@ class _AnswerPageState extends State<AnswerPage> {
                           child: Text(
                             widget.question,
                             style: TextStyle(
-                              fontSize: 14.0,
+                              fontSize: 16.0,
                               fontWeight: FontWeight.bold,
                               color: Color(0xff161616),
                             ),

@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/src/parts/top_bar.dart';
-// import 'package:flutter_application/src/parts/bottom_bar.dart';
-// import 'package:flutter_application/src/parts/ui-parts.dart';
-// import 'package:flutter_application/src/quiz.dart';
-// import 'package:flutter_application/src/add.dart';
-// import 'package:flutter_application/src/ai.dart';
-// import 'package:flutter_application/src/profile.dart';
+import 'package:flutter_application/src/quiz.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LanguagePage extends StatefulWidget {
   @override
@@ -13,14 +9,66 @@ class LanguagePage extends StatefulWidget {
 }
 
 class _LanguagePageState extends State<LanguagePage> {
-  int myCurrentIndex = 0;
+  late Future<List<QuizCard>> _quizCards;
+
+  @override
+  void initState() {
+    super.initState();
+    _quizCards = _loadQuizCards();
+  }
+
+  Future<List<QuizCard>> _loadQuizCards() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('quiz')
+        .where('subject', isEqualTo: '国語')
+        .get();
+
+    var sortedDocs = snapshot.docs;
+    sortedDocs.sort((a, b) {
+      int numA = int.tryParse(a['number']) ?? 0;
+      int numB = int.tryParse(b['number']) ?? 0;
+      return numA.compareTo(numB);
+    });
+
+    return sortedDocs.map((doc) {
+      var data = doc.data();
+      return QuizCard(
+        title: data['title'],
+        quiz_number: data['number'],
+        imgPath: data['imageURL'],
+        elsitags: List<String>.from(data['elsiTag']),
+        techtags: List<String>.from(data['techTag']),
+        text: data['text'],
+        question: data['question'],
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBarBack(),
-      body: Center(
-        child: Text('国語のコンテンツがここに表示されます'),
+      body: FutureBuilder<List<QuizCard>>(
+        future: _quizCards,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(child: Text('エラーが発生しました'));
+          }
+
+          // QuizCardにマージンを追加
+          return ListView(
+            children: snapshot.data!.map((quizCard) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(20,0,20,8),
+                child: quizCard,
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }
@@ -32,14 +80,66 @@ class MathPage extends StatefulWidget {
 }
 
 class _MathPageState extends State<MathPage> {
-  int myCurrentIndex = 0;
+  late Future<List<QuizCard>> _quizCards;
+
+  @override
+  void initState() {
+    super.initState();
+    _quizCards = _loadQuizCards();
+  }
+
+  Future<List<QuizCard>> _loadQuizCards() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('quiz')
+        .where('subject', isEqualTo: '数学')
+        .get();
+
+    var sortedDocs = snapshot.docs;
+    sortedDocs.sort((a, b) {
+      int numA = int.tryParse(a['number']) ?? 0;
+      int numB = int.tryParse(b['number']) ?? 0;
+      return numA.compareTo(numB);
+    });
+
+    return sortedDocs.map((doc) {
+      var data = doc.data();
+      return QuizCard(
+        title: data['title'],
+        quiz_number: data['number'],
+        imgPath: data['imageURL'],
+        elsitags: List<String>.from(data['elsiTag']),
+        techtags: List<String>.from(data['techTag']),
+        text: data['text'],
+        question: data['question'],
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBarBack(),
-      body: Center(
-        child: Text('数学のコンテンツがここに表示されます'),
+      body: FutureBuilder<List<QuizCard>>(
+        future: _quizCards,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(child: Text('エラーが発生しました'));
+          }
+
+          // QuizCardにマージンを追加
+          return ListView(
+            children: snapshot.data!.map((quizCard) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(20,0,20,8),
+                child: quizCard,
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }
@@ -51,14 +151,66 @@ class SciencePage extends StatefulWidget {
 }
 
 class _SciencePageState extends State<SciencePage> {
-  int myCurrentIndex = 0;
+  late Future<List<QuizCard>> _quizCards;
+
+  @override
+  void initState() {
+    super.initState();
+    _quizCards = _loadQuizCards();
+  }
+
+  Future<List<QuizCard>> _loadQuizCards() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('quiz')
+        .where('subject', isEqualTo: '科学')
+        .get();
+
+    var sortedDocs = snapshot.docs;
+    sortedDocs.sort((a, b) {
+      int numA = int.tryParse(a['number']) ?? 0;
+      int numB = int.tryParse(b['number']) ?? 0;
+      return numA.compareTo(numB);
+    });
+
+    return sortedDocs.map((doc) {
+      var data = doc.data();
+      return QuizCard(
+        title: data['title'],
+        quiz_number: data['number'],
+        imgPath: data['imageURL'],
+        elsitags: List<String>.from(data['elsiTag']),
+        techtags: List<String>.from(data['techTag']),
+        text: data['text'],
+        question: data['question'],
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBarBack(),
-      body: Center(
-        child: Text('科学のコンテンツがここに表示されます'),
+      body: FutureBuilder<List<QuizCard>>(
+        future: _quizCards,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(child: Text('エラーが発生しました'));
+          }
+
+          // QuizCardにマージンを追加
+          return ListView(
+            children: snapshot.data!.map((quizCard) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(20,0,20,8),
+                child: quizCard,
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }
@@ -70,14 +222,66 @@ class SocietyPage extends StatefulWidget {
 }
 
 class _SocietyPageState extends State<SocietyPage> {
-  int myCurrentIndex = 0;
+  late Future<List<QuizCard>> _quizCards;
+
+  @override
+  void initState() {
+    super.initState();
+    _quizCards = _loadQuizCards();
+  }
+
+  Future<List<QuizCard>> _loadQuizCards() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('quiz')
+        .where('subject', isEqualTo: '社会')
+        .get();
+
+    var sortedDocs = snapshot.docs;
+    sortedDocs.sort((a, b) {
+      int numA = int.tryParse(a['number']) ?? 0;
+      int numB = int.tryParse(b['number']) ?? 0;
+      return numA.compareTo(numB);
+    });
+
+    return sortedDocs.map((doc) {
+      var data = doc.data();
+      return QuizCard(
+        title: data['title'],
+        quiz_number: data['number'],
+        imgPath: data['imageURL'],
+        elsitags: List<String>.from(data['elsiTag']),
+        techtags: List<String>.from(data['techTag']),
+        text: data['text'],
+        question: data['question'],
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBarBack(),
-      body: Center(
-        child: Text('社会のコンテンツがここに表示されます'),
+      body: FutureBuilder<List<QuizCard>>(
+        future: _quizCards,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(child: Text('エラーが発生しました'));
+          }
+
+          // QuizCardにマージンを追加
+          return ListView(
+            children: snapshot.data!.map((quizCard) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(20,0,20,8),
+                child: quizCard,
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }

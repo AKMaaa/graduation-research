@@ -80,7 +80,6 @@ class QuizPage extends StatelessWidget {
                 "今日の1問",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              // Firestoreからクイズデータを取得するFutureBuilderを追加
               FutureBuilder<QuerySnapshot>(
                 future: FirebaseFirestore.instance.collection('quiz').get(),
                 builder: (context, snapshot) {
@@ -94,8 +93,12 @@ class QuizPage extends StatelessWidget {
                     return Center(child: Text("クイズがありません"));
                   }
 
-                  // Firestoreのクイズデータを取得
-                  var quizData = snapshot.data!.docs[1];
+                  var sortedDocs = snapshot.data!.docs;
+                  sortedDocs.sort(
+                      (a, b) => int.parse(a.id).compareTo(int.parse(b.id)));
+
+                  var quizData = sortedDocs[17];
+
                   return QuizCard(
                     title: quizData['title'],
                     quiz_number: quizData['number'],
@@ -151,11 +154,11 @@ class QuizPage extends StatelessWidget {
                   ),
                   Expanded(
                     child: SubjectCard(
-                      title: "数学",
+                      title: "社会",
                       imgPath: "lib/src/assets/img/society.png",
                       progress: 43,
                       total: 45,
-                      onTap: () => navigateToSubject('数学'),
+                      onTap: () => navigateToSubject('社会'),
                     ),
                   ),
                 ],

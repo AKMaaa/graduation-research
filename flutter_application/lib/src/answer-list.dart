@@ -218,7 +218,7 @@ class _AnswerListPageState extends State<AnswerListPage> {
               ),
               onPressed: () {
                 if (_isPublicSelected) {
-                  // 全体に共有する場合の処理
+                  _saveToFirestore();
                 } else {
                   _saveToFirestore();
                 }
@@ -250,7 +250,12 @@ class _AnswerListPageState extends State<AnswerListPage> {
   }) {
     return Expanded(
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          onTap();
+          setState(() {
+            _isPublicSelected = isLeft ? false : true;
+          });
+        },
         child: AnimatedContainer(
           duration: Duration(milliseconds: 250),
           height: 40,
@@ -296,6 +301,8 @@ class _AnswerListPageState extends State<AnswerListPage> {
     if (user == null) return;
 
     var quizId = widget.quizId;
+    print("Quiz ID : $quizId");
+
     var selectedMessages =
         widget.messages.where((msg) => msg.isSelected).toList();
 
@@ -303,11 +310,9 @@ class _AnswerListPageState extends State<AnswerListPage> {
     String storagePath;
 
     if (_isPublicSelected) {
-      // For public selection
       docRef = _firestore.collection('quiz').doc(quizId);
       storagePath = 'quiz/all/$quizId/';
     } else {
-      // For individual selection
       docRef = _firestore
           .collection('users')
           .doc(user.uid)
@@ -316,7 +321,12 @@ class _AnswerListPageState extends State<AnswerListPage> {
       storagePath = 'quiz/personal/${user.email}/$quizId/';
     }
 
+    var docSnapshot = await docRef.get();
     var batch = _firestore.batch();
+
+    if(!docSnapshot.exists) {
+        batch.set(docRef, {"answers" : []});
+    }
 
     for (var message in selectedMessages) {
       if (message.type == MessageType.image) {
